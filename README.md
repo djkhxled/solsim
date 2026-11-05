@@ -1,6 +1,6 @@
 # SolSim
 
-Paper trade Solana memecoins on gmgn.ai and make PnL cards. **SolSim never touches your wallet.** It has no wallet permissions and no signing code. It reads prices and keeps a fake SOL balance on your computer.
+An open source paper trading tool to trade Solana memecoins on gmgn.ai and make PnL cards. **SolSim never touches your wallet.** It has no wallet permissions and no signing code. It reads prices and keeps a fake SOL balance on your computer.
 
 ## Install
 1. Open `chrome://extensions` in Chrome.
