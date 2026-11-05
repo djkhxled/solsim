@@ -9,6 +9,7 @@ const HTML = `
     <button class="icon" data-act="collapse" title="Collapse">▾</button>
   </div>
   <div class="body">
+    <div class="stale" data-stale hidden>SolSim was updated. Go to chrome://extensions, click ↻ on SolSim, then reload this tab. Trading is paused until then.</div>
     <div class="status"><span class="badge" data-badge></span><span class="mc" data-mc></span></div>
     <div class="sect">Buy <span data-sym></span></div>
     <div class="grid" data-buys></div>
@@ -127,6 +128,7 @@ export function createView(h) {
     lastVm = vm;
     host.style.display = vm.visible ? 'block' : 'none';
     if (!vm.visible) return;
+    $('[data-stale]').hidden = !vm.stale;
     $('[data-bal]').textContent = fmtSol(vm.balance);
     const badge = $('[data-badge]');
     badge.textContent = vm.badge.text;

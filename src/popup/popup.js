@@ -3,6 +3,7 @@ import { positionStats } from '../engine/positions.js';
 import { lastPrice } from '../engine/ticks.js';
 import { fmtSol, fmtPct, fmtCompactUsd } from '../shared/format.js';
 import { downscaleToDataUrl } from '../shared/image.js';
+import { checkStale } from '../shared/version.js';
 
 const send = (m) => chrome.runtime.sendMessage(m);
 const $ = (s) => document.querySelector(s);
@@ -146,3 +147,4 @@ chrome.storage.onChanged.addListener((ch, area) => {
   if (area === 'local' && (ch.ledger || ch.settings)) load();
 });
 load();
+checkStale().then((s) => { $('#stale').hidden = !s; });

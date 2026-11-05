@@ -30,4 +30,5 @@ input { flex: 1; min-width: 0; font: inherit; color: inherit; background: #0b0d1
 .lim { display: flex; justify-content: space-between; align-items: center; margin-top: 6px; color: #c8ccd1; }
 .toast { position: absolute; left: 12px; right: 12px; bottom: 12px; padding: 8px; border-radius: 8px; background: #2a2f37; opacity: 0; pointer-events: none; transition: opacity .15s; }
 .toast.show { opacity: 1; } .toast.ok { background: #123b2d; } .toast.err { background: #4a1621; }
+.stale { background: rgba(255,196,0,.15); color: #ffc400; border: 1px solid rgba(255,196,0,.4); border-radius: 8px; padding: 8px; margin-bottom: 8px; font-size: 12px; }
 [hidden] { display: none !important; }

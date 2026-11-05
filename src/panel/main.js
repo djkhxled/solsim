@@ -6,6 +6,7 @@ import { openPositionFor, latestPositionFor, positionStats } from '../engine/pos
 import { triggeredLimits } from '../engine/limits.js';
 import { DEFAULT_SETTINGS, DEFAULT_SUPPLY } from '../engine/ledger.js';
 import { createView } from './view.js';
+import { checkStale } from '../shared/version.js';
 
 const send = (msg) =>
   chrome.runtime.sendMessage(msg).catch((e) => ({ ok: false, error: String((e && e.message) || e) }));
@@ -14,7 +15,7 @@ export function start() {
   const st = {
     mint: null, price: null, solUsd: null, infos: new Map(),
     ledger: null, settings: DEFAULT_SETTINGS,
-    firing: new Map(), lastSlow: 0, solSavedAt: 0,
+    firing: new Map(), lastSlow: 0, solSavedAt: 0, stale: false, lastVersionCheck: 0,
   };
 
   const coin = () => {
@@ -24,9 +25,10 @@ export function start() {
   const openPos = () => (st.ledger && st.mint ? openPositionFor(st.ledger.positions, st.mint) : null);
   const supply = () => coin().totalSupply || (openPos() && openPos().totalSupply) || DEFAULT_SUPPLY;
   const market = () => ({ priceUsd: st.price.priceUsd, solUsd: st.solUsd, source: st.price.source });
-  const tradable = () => !!st.price && canTrade(st.price) && st.solUsd > 0;
+  const tradable = () => !st.stale && !!st.price && canTrade(st.price) && st.solUsd > 0;
 
   async function trade(cmd) {
+    if (st.stale) return view.toast('Reload SolSim in chrome://extensions first', 'err');
     if (!tradable()) return view.toast('No price yet', 'err');
     const r = await send({ cmd: 'trade', trade: { ...cmd, mint: st.mint, coin: coin() }, market: market() });
     if (!r || !r.ok) return view.toast((r && r.error) || 'Trade failed', 'err');
@@ -86,6 +88,7 @@ export function start() {
           text: `Sell ${Math.round(l.fraction * 100)}% ${l.direction === 'above' ? '≥' : '≤'} ${fmtCompactUsd(l.triggerMcUsd)}`,
         })),
         cardPosId: cardPos ? cardPos.id : null,
+        stale: st.stale,
       });
     });
   }
@@ -164,6 +167,10 @@ export function start() {
       st.mint = m;
       st.price = m ? initialPriceState(m, now) : null;
       view.clearLimitForm();
+    }
+    if (now - st.lastVersionCheck >= 30000) {
+      st.lastVersionCheck = now;
+      checkStale().then((s) => { st.stale = s; render(); });
     }
     if (st.price) st.price = reducePrice(st.price, { type: 'tick' }, now);
     if (st.mint && now - st.lastSlow >= 2000) {
