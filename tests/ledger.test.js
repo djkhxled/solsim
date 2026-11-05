@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { DEFAULT_SETTINGS, initialLedger, executeTrade, addLimit, cancelLimit, fireLimit, resetRun } from '../src/engine/ledger.js';
+import { DEFAULT_SETTINGS, initialLedger, executeTrade, addLimit, cancelLimit, fireLimit, resetRun, migrateSettings } from '../src/engine/ledger.js';
 
 const S = DEFAULT_SETTINGS;
 const close = (a, b, eps = 1e-9) => assert.ok(Math.abs(a - b) <= eps, `${a} != ${b}`);
@@ -18,10 +18,10 @@ test('buy opens a position and records a trade', () => {
   const ctx = mkCtx();
   const r = executeTrade(initialLedger(S, 0), buy(1), ctx());
   assert.equal(r.ok, true);
-  close(r.ledger.balance, 10 - 1.005);
+  close(r.ledger.balance, 10 - 1.001);
   assert.equal(r.ledger.positions.length, 1);
   const t = r.trade;
-  assert.equal(t.side, 'buy'); assert.equal(t.symbol, 'AMD'); close(t.amountSol, 1.005);
+  assert.equal(t.side, 'buy'); assert.equal(t.symbol, 'AMD'); close(t.amountSol, 1.001);
   close(t.mcUsd, 100000, 1e-6); assert.equal(t.source, 'live'); assert.equal(t.posId, r.ledger.positions[0].id);
 });
 test('second buy reuses the open position and fills in a missing symbol', () => {
@@ -31,7 +31,7 @@ test('second buy reuses the open position and fills in a missing symbol', () => 
   r = executeTrade(r.ledger, buy(1), ctx());
   assert.equal(r.ledger.positions.length, 1);
   assert.equal(r.ledger.positions[0].symbol, 'AMD');
-  close(r.ledger.positions[0].invested, 2.01);
+  close(r.ledger.positions[0].invested, 2.002);
 });
 test('sell 50% then 100% closes and drops its limits', () => {
   const ctx = mkCtx();
@@ -51,7 +51,7 @@ test('sellInit takes out the initial', () => {
   let r = executeTrade(initialLedger(S, 0), buy(1), ctx());
   r = executeTrade(r.ledger, { side: 'sellInit', mint: 'm' }, ctx({ priceUsd: 0.0003 }));
   assert.equal(r.ok, true);
-  close(r.ledger.positions[0].sold, 1.005);
+  close(r.ledger.positions[0].sold, 1.001);
   assert.equal(executeTrade(r.ledger, { side: 'sellInit', mint: 'm' }, ctx({ priceUsd: 0.0003 })).ok, false);
 });
 test('errors', () => {
@@ -81,4 +81,23 @@ test('resetRun archives and refills', () => {
   assert.equal(l.balance, 10); assert.deepEqual(l.positions, []); assert.deepEqual(l.trades, []);
   assert.equal(l.pastRuns.length, 1); assert.equal(l.pastRuns[0].trades.length, 1);
   assert.equal(l.pastRuns[0].endedAt, 5000); assert.equal(l.runStartedAt, 5000);
+});
+
+test('coin liquidity sets the pool size and is kept on the position', () => {
+  const ctx = mkCtx();
+  // $20,000 liquidity at $100/SOL -> 100 SOL on the SOL side
+  let r = executeTrade(initialLedger(S, 0), buy(1, { symbol: 'AMD', liquidityUsd: 20000 }), ctx());
+  close(r.trade.impactPct, 0.99);
+  assert.equal(r.ledger.positions[0].liquidityUsd, 20000);
+  r = executeTrade(r.ledger, { side: 'sell', mint: 'm', fraction: 1 }, ctx());
+  assert.ok(r.trade.impactPct > 0 && r.trade.impactPct < 1.1);
+});
+test('defaults: slippage is a 20% limit, priority fee 0.001', () => {
+  assert.equal(S.slippagePct, 20); assert.equal(S.priorityFeeSol, 0.001);
+});
+test('migrateSettings moves the old 0.005 default down once', () => {
+  assert.deepEqual(migrateSettings({ priorityFeeSol: 0.005, slippagePct: 25 }), { priorityFeeSol: 0.001, slippagePct: 25, settingsVersion: 2 });
+  assert.deepEqual(migrateSettings({ priorityFeeSol: 0.003 }), { priorityFeeSol: 0.003, settingsVersion: 2 });
+  assert.deepEqual(migrateSettings({ priorityFeeSol: 0.005, settingsVersion: 2 }), { priorityFeeSol: 0.005, settingsVersion: 2 });
+  assert.equal(migrateSettings(undefined), undefined);
 });

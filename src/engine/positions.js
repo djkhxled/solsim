@@ -8,6 +8,7 @@ export function newPosition({ id, mint, coin, now }) {
     name: c.name || c.symbol || 'Unknown',
     logo: c.logo || null,
     totalSupply: c.totalSupply || null,
+    liquidityUsd: c.liquidityUsd || null,
     openedAt: now, closedAt: null, status: 'open',
     invested: 0, sold: 0, tokens: 0, peakTokens: 0,
   };
@@ -24,8 +25,9 @@ export function applySell(pos, q, now) {
   return { ...pos, sold: pos.sold + q.proceeds, tokens: closed ? 0 : left, status: closed ? 'closed' : 'open', closedAt: closed ? now : null };
 }
 
-export function positionStats(pos, priceSol, settings) {
-  const remaining = priceSol > 0 ? pos.tokens * priceSol * (1 - settings.slippagePct / 100) : 0;
+// Remaining is market value (tokens x current price), like GMGN's unrealized PnL.
+export function positionStats(pos, priceSol) {
+  const remaining = priceSol > 0 ? pos.tokens * priceSol : 0;
   const pnlSol = pos.sold + remaining - pos.invested;
   const pnlPct = pos.invested > 0 ? (pnlSol / pos.invested) * 100 : 0;
   return { invested: pos.invested, sold: pos.sold, remaining, pnlSol, pnlPct };

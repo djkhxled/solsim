@@ -12,7 +12,7 @@ export function cardModel({ position, trades, series = [], lastPriceUsd, solUsdN
   const soldUsd = sum('sell', (t) => t.amountSol * t.solUsd);
   const solNow = solUsdNow > 0 ? solUsdNow : (own.length ? own[own.length - 1].solUsd : 0);
   const holdSol = position.tokens > 0 && lastPriceUsd > 0 && solNow > 0
-    ? position.tokens * (lastPriceUsd / solNow) * (1 - settings.slippagePct / 100) : 0;
+    ? position.tokens * (lastPriceUsd / solNow) : 0;
   const usd = currency === 'USD';
   const bought = usd ? boughtUsd : boughtSol;
   const sold = usd ? soldUsd : soldSol;

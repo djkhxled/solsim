@@ -1,4 +1,4 @@
-import { DEFAULT_SETTINGS, initialLedger, executeTrade, addLimit, cancelLimit, fireLimit, resetRun } from '../engine/ledger.js';
+import { DEFAULT_SETTINGS, initialLedger, executeTrade, addLimit, cancelLimit, fireLimit, resetRun, migrateSettings } from '../engine/ledger.js';
 import { addTick } from '../engine/ticks.js';
 import { backupPrice, priceHistory, bytesToDataUrl } from './apis.js';
 
@@ -14,7 +14,7 @@ function enqueue(fn) {
 
 async function load() {
   const { ledger, settings } = await store.get(['ledger', 'settings']);
-  const s = { ...DEFAULT_SETTINGS, ...(settings || {}) };
+  const s = { ...DEFAULT_SETTINGS, ...(migrateSettings(settings) || {}) };
   return { ledger: ledger || initialLedger(s, Date.now()), settings: s };
 }
 

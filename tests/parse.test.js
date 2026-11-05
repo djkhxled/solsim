@@ -17,8 +17,8 @@ test('ignored channels and garbage', () => {
 });
 test('info response', () => {
   assert.deepEqual(parseInfoResponse(infoResponse), [
-    { type: 'info', mint: MINT, symbol: 'trump', name: 'the lame duck', logo: 'https://gmgn.ai/external-res/fake_v2.webp', decimals: 6, totalSupply: 1e9 },
-    { type: 'info', mint: NEXT, symbol: 'NX', name: 'NX', logo: null, decimals: 6, totalSupply: null },
+    { type: 'info', mint: MINT, symbol: 'trump', name: 'the lame duck', logo: 'https://gmgn.ai/external-res/fake_v2.webp', decimals: 6, totalSupply: 1e9, liquidityUsd: 5711.46 },
+    { type: 'info', mint: NEXT, symbol: 'NX', name: 'NX', logo: null, decimals: 6, totalSupply: null, liquidityUsd: null },
   ]);
   assert.deepEqual(parseInfoResponse('{"data":"nope"}'), []);
 });

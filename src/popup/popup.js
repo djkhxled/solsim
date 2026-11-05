@@ -34,7 +34,7 @@ function renderPositions() {
   }
   $('#positions').replaceChildren(...list.map((p) => {
     const lp = p.status === 'open' ? lastPrice(st.ticks['ticks:' + p.id] || []) : null;
-    const s = positionStats(p, lp && st.solUsd ? lp / st.solUsd : 0, st.settings);
+    const s = positionStats(p, lp && st.solUsd ? lp / st.solUsd : 0);
     const img = el('img', { className: 'coin', alt: '' });
     if (p.logo) img.src = p.logo; else img.style.visibility = 'hidden';
     const btn = el('button', { className: 'small', textContent: 'Make card' });
@@ -112,7 +112,7 @@ $('#sform').onsubmit = async (e) => {
     startingBalance: Number(f.startingBalance.value) || DEFAULT_SETTINGS.startingBalance,
     platformFeePct: Math.max(0, Number(f.platformFeePct.value) || 0),
     priorityFeeSol: Math.max(0, Number(f.priorityFeeSol.value) || 0),
-    slippagePct: Math.max(0, Number(f.slippagePct.value) || 0),
+    slippagePct: Math.max(0.1, Number(f.slippagePct.value) || DEFAULT_SETTINGS.slippagePct),
     buyPresets, sellPresets,
     pnlCurrency: f.pnlCurrency.value === 'SOL' ? 'SOL' : 'USD',
     displayName: f.displayName.value.trim(),

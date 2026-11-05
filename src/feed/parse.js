@@ -39,6 +39,7 @@ export function parseInfoResponse(text) {
       name: typeof d.name === 'string' && d.name ? d.name : d.symbol,
       logo: typeof d.logo === 'string' && d.logo ? d.logo : null,
       decimals: num(d.decimals), totalSupply: supply > 0 ? supply : null,
+      liquidityUsd: num(d.liquidity) > 0 ? num(d.liquidity) : null,
     });
   }
   return out;

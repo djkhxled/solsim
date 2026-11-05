@@ -3,10 +3,18 @@ import { newPosition, applyBuy, applySell, openPositionFor } from './positions.j
 import { makeLimit } from './limits.js';
 
 export const DEFAULT_SETTINGS = Object.freeze({
-  startingBalance: 10, platformFeePct: 1, priorityFeeSol: 0.005, slippagePct: 1,
+  startingBalance: 10, platformFeePct: 1, priorityFeeSol: 0.001, slippagePct: 20,
   buyPresets: [0.1, 0.2, 0.5, 1, 3, 5, 10, 20], sellPresets: [10, 25, 50, 100],
-  pnlCurrency: 'USD', displayName: '', avatar: null,
+  pnlCurrency: 'USD', displayName: '', avatar: null, settingsVersion: 2,
 });
+
+// v1 shipped a 0.005 SOL priority fee default; move it to 0.001 once.
+export function migrateSettings(saved) {
+  if (!saved || saved.settingsVersion >= 2) return saved;
+  const out = { ...saved, settingsVersion: 2 };
+  if (out.priorityFeeSol === 0.005) out.priorityFeeSol = 0.001;
+  return out;
+}
 export const DEFAULT_SUPPLY = 1e9;
 
 export function initialLedger(settings, now) {
@@ -28,6 +36,7 @@ function refreshCoin(pos, coin) {
     name: pos.name === 'Unknown' && (coin.name || coin.symbol) ? coin.name || coin.symbol : pos.name,
     logo: pos.logo || coin.logo || null,
     totalSupply: pos.totalSupply || coin.totalSupply || null,
+    liquidityUsd: coin.liquidityUsd || pos.liquidityUsd || null,
   };
 }
 
@@ -36,10 +45,12 @@ export function executeTrade(ledger, cmd, ctx) {
   if (!(priceUsd > 0) || !(solUsd > 0)) return { ok: false, error: 'No price' };
   const priceSol = priceUsd / solUsd;
   let pos = openPositionFor(ledger.positions, cmd.mint);
+  const liquidityUsd = (cmd.coin && cmd.coin.liquidityUsd) || (pos && pos.liquidityUsd) || null;
+  const poolSol = liquidityUsd > 0 ? liquidityUsd / 2 / solUsd : null; // SOL side of the pool
   let quote;
   let side;
   if (cmd.side === 'buy') {
-    quote = quoteBuy({ balance: ledger.balance, amountSol: cmd.amountSol, priceSol, settings });
+    quote = quoteBuy({ balance: ledger.balance, amountSol: cmd.amountSol, priceSol, poolSol, settings });
     if (!quote.ok) return quote;
     const coin = cmd.coin || {};
     pos = pos ? refreshCoin(pos, coin) : newPosition({ id: ctx.newId(), mint: cmd.mint, coin, now });
@@ -49,11 +60,12 @@ export function executeTrade(ledger, cmd, ctx) {
     if (!pos) return { ok: false, error: 'No open position' };
     let fraction = cmd.fraction;
     if (cmd.side === 'sellInit') {
-      fraction = sellInitialsFraction({ invested: pos.invested, sold: pos.sold, tokensHeld: pos.tokens, priceSol, settings });
+      fraction = sellInitialsFraction({ invested: pos.invested, sold: pos.sold, tokensHeld: pos.tokens, priceSol, poolSol, settings });
       if (fraction == null) return { ok: false, error: 'Initials already taken out' };
     }
-    quote = quoteSell({ tokensHeld: pos.tokens, fraction, priceSol, settings });
+    quote = quoteSell({ tokensHeld: pos.tokens, fraction, priceSol, poolSol, settings });
     if (!quote.ok) return quote;
+    if (cmd.coin) pos = refreshCoin(pos, cmd.coin);
     pos = applySell(pos, quote, now);
     side = 'sell';
   }
@@ -62,7 +74,7 @@ export function executeTrade(ledger, cmd, ctx) {
     amountSol: side === 'buy' ? quote.cost : quote.proceeds,
     tokens: side === 'buy' ? quote.tokens : quote.tokensOut,
     priceUsd, solUsd, mcUsd: priceUsd * (pos.totalSupply || DEFAULT_SUPPLY),
-    fillPriceSol: quote.fillPriceSol, platformFee: quote.platformFee, priorityFee: quote.priorityFee,
+    fillPriceSol: quote.fillPriceSol, impactPct: quote.impactPct, platformFee: quote.platformFee, priorityFee: quote.priorityFee,
     source: ctx.source || 'live', reason: cmd.reason || null,
   };
   const balance = side === 'buy' ? ledger.balance - quote.cost : ledger.balance + quote.proceeds;

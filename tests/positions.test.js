@@ -28,9 +28,9 @@ test('dust closes the position', () => {
 test('positionStats', () => {
   const tokens = 0.99 / 1.01e-6;
   const p = applyBuy(base(), { cost: 1.005, tokens });
-  const s = positionStats(p, 2e-6, S);
-  close(s.remaining, tokens * 2e-6 * 0.99); close(s.pnlSol, s.remaining - 1.005); close(s.pnlPct, (s.pnlSol / 1.005) * 100);
-  assert.equal(positionStats(p, 0, S).remaining, 0);
+  const s = positionStats(p, 2e-6);
+  close(s.remaining, tokens * 2e-6); close(s.pnlSol, s.remaining - 1.005); close(s.pnlPct, (s.pnlSol / 1.005) * 100);
+  assert.equal(positionStats(p, 0).remaining, 0);
 });
 test('finders', () => {
   const a = { ...base(), id: 'a', status: 'closed', openedAt: 1 };

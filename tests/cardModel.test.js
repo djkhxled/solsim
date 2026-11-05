@@ -26,10 +26,10 @@ test('closed position in SOL', () => {
 test('open position values hold at last price', () => {
   const pos = { id: 'p1', symbol: 'AMD', tokens: 1e6, status: 'open' };
   const m = cardModel({ position: pos, trades: [buyT], series: [[1500, 0.0001], [1600, 0.0001]], lastPriceUsd: 0.0001, solUsdNow: 100, currency: 'USD', settings });
-  assert.equal(m.pnlText, '-$1.50');
-  assert.equal(m.pctText, '-1.49%');
+  assert.equal(m.pnlText, '-$0.500');
+  assert.equal(m.pctText, '-0.50%');
   assert.equal(m.positive, false);
-  assert.equal(m.stats[2].value, '$99.00');
+  assert.equal(m.stats[2].value, '$100.00');
   assert.deepEqual(m.series.map((p) => p[0]), [1000, 1500, 1600]);
   assert.equal(m.isOpen, true);
 });

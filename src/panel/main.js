@@ -19,7 +19,7 @@ export function start() {
 
   const coin = () => {
     const i = st.infos.get(st.mint) || {};
-    return { symbol: i.symbol || symbolFromTitle(document.title) || '???', name: i.name || null, logo: i.logo || null, totalSupply: i.totalSupply || null };
+    return { symbol: i.symbol || symbolFromTitle(document.title) || '???', name: i.name || null, logo: i.logo || null, totalSupply: i.totalSupply || null, liquidityUsd: i.liquidityUsd || null };
   };
   const openPos = () => (st.ledger && st.mint ? openPositionFor(st.ledger.positions, st.mint) : null);
   const supply = () => coin().totalSupply || (openPos() && openPos().totalSupply) || DEFAULT_SUPPLY;
@@ -31,7 +31,8 @@ export function start() {
     const r = await send({ cmd: 'trade', trade: { ...cmd, mint: st.mint, coin: coin() }, market: market() });
     if (!r || !r.ok) return view.toast((r && r.error) || 'Trade failed', 'err');
     const t = r.trade;
-    view.toast(t.side === 'buy' ? `Bought ${fmtSol(t.amountSol)} SOL of ${t.symbol}` : `Sold for ${fmtSol(t.amountSol)} SOL`, 'ok');
+    const impact = t.impactPct >= 0.1 ? ` · ${t.impactPct.toFixed(1)}% impact` : '';
+    view.toast((t.side === 'buy' ? `Bought ${fmtSol(t.amountSol)} SOL of ${t.symbol}` : `Sold for ${fmtSol(t.amountSol)} SOL`) + impact, 'ok');
   }
 
   const view = createView({
@@ -66,7 +67,7 @@ export function start() {
       raf = 0;
       const pos = openPos();
       const priceSol = st.price && st.price.priceUsd && st.solUsd ? st.price.priceUsd / st.solUsd : 0;
-      const stats = pos ? positionStats(pos, priceSol, st.settings) : null;
+      const stats = pos ? positionStats(pos, priceSol) : null;
       const cardPos = pos || (st.ledger && st.mint ? latestPositionFor(st.ledger.positions, st.mint) : null);
       view.render({
         visible: !!st.mint,
