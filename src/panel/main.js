@@ -8,8 +8,19 @@ import { DEFAULT_SETTINGS, DEFAULT_SUPPLY } from '../engine/ledger.js';
 import { createView } from './view.js';
 import { checkStale } from '../shared/version.js';
 
-const send = (msg) =>
-  chrome.runtime.sendMessage(msg).catch((e) => ({ ok: false, error: String((e && e.message) || e) }));
+// After SolSim is reloaded in chrome://extensions, panels already open in GMGN tabs
+// are cut off: every chrome.* call throws "Extension context invalidated".
+const alive = () => {
+  try { return !!(chrome.runtime && chrome.runtime.id); } catch { return false; }
+};
+
+const send = (msg) => {
+  try {
+    return chrome.runtime.sendMessage(msg).catch((e) => ({ ok: false, error: String((e && e.message) || e) }));
+  } catch {
+    return Promise.resolve({ ok: false, error: 'SolSim was reloaded. Refresh this tab.' });
+  }
+};
 
 export function start() {
   const st = {
@@ -106,15 +117,26 @@ export function start() {
     }
   }
 
-  window.addEventListener('message', (ev) => {
+  let timer = 0;
+  let dead = false;
+  function shutdown() {
+    if (dead) return;
+    dead = true;
+    clearInterval(timer);
+    window.removeEventListener('message', onFeed);
+    view.destroy();
+  }
+
+  function onFeed(ev) {
     if (ev.source !== window || !ev.data || ev.data.source !== 'solsim-feed') return;
+    if (!alive()) return shutdown();
     let priced = false;
     for (const e of parseFeedMessage(ev.data)) {
       if (e.type === 'info') st.infos.set(e.mint, e);
       else if (e.type === 'sol') {
         st.solUsd = e.priceUsd;
         const now = Date.now();
-        if (now - st.solSavedAt > 30000) { st.solSavedAt = now; chrome.storage.local.set({ solUsd: e.priceUsd }); }
+        if (now - st.solSavedAt > 30000) { st.solSavedAt = now; try { chrome.storage.local.set({ solUsd: e.priceUsd }); } catch {} }
       } else if (e.type === 'price' && st.price && e.mint === st.mint) {
         st.price = reducePrice(st.price, { type: 'live', mint: e.mint, priceUsd: e.priceUsd }, Date.now());
         priced = true;
@@ -122,7 +144,8 @@ export function start() {
     }
     if (priced) checkLimits();
     render();
-  });
+  }
+  window.addEventListener('message', onFeed);
   window.postMessage({ source: 'solsim-panel', kind: 'hello' }, location.origin);
 
   chrome.storage.onChanged.addListener((ch, area) => {
@@ -155,12 +178,8 @@ export function start() {
     render();
   }
 
-  const timer = setInterval(() => {
-    if (!chrome.runtime || !chrome.runtime.id) {
-      clearInterval(timer);
-      view.destroy();
-      return;
-    }
+  timer = setInterval(() => {
+    if (!alive()) return shutdown();
     const now = Date.now();
     const m = mintFromPath(location.pathname);
     if (m !== st.mint) {

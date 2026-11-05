@@ -43,6 +43,10 @@ const HTML = `
   </div>
 </div>`;
 
+const save = (obj) => {
+  try { chrome.storage.local.set(obj); } catch { /* SolSim was reloaded; this panel is about to go away */ }
+};
+
 export function createView(h) {
   const host = document.createElement('div');
   host.style.cssText = 'position:fixed;z-index:2147483000;left:16px;top:140px;display:none;';
@@ -66,11 +70,11 @@ export function createView(h) {
     host.style.left = Math.min(Math.max(0, x), window.innerWidth - w) + 'px';
     host.style.top = Math.min(Math.max(0, y), window.innerHeight - 40) + 'px';
   }
-  function setCollapsed(v, save) {
+  function setCollapsed(v, persist) {
     collapsed = v;
     $('.body').hidden = v;
     $('[data-act=collapse]').textContent = v ? '▸' : '▾';
-    if (save) chrome.storage.local.set({ panelCollapsed: v });
+    if (persist) save({ panelCollapsed: v });
   }
   chrome.storage.local.get(['panelPos', 'panelCollapsed']).then((o) => {
     if (o.panelPos) place(o.panelPos.x, o.panelPos.y);
@@ -89,7 +93,7 @@ export function createView(h) {
   handle.addEventListener('pointerup', () => {
     if (!drag) return;
     drag = null;
-    chrome.storage.local.set({ panelPos: { x: parseFloat(host.style.left), y: parseFloat(host.style.top) } });
+    save({ panelPos: { x: parseFloat(host.style.left), y: parseFloat(host.style.top) } });
   });
 
   // Keep GMGN hotkeys from firing while typing in the panel.
