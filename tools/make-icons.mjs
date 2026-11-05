@@ -1,7 +1,7 @@
 import { deflateSync } from 'node:zlib';
 import { writeFileSync, mkdirSync } from 'node:fs';
 import { pathToFileURL } from 'node:url';
-import { LOGO_LINE } from '../src/shared/logo.js';
+import { LOGO_LINE, gradientAt } from '../src/shared/logo.js';
 
 const CRC_TABLE = Array.from({ length: 256 }, (_, n) => {
   let c = n;
@@ -39,8 +39,7 @@ function sample(u, v) {
   let d = Infinity;
   for (let i = 0; i < LOGO_LINE.length - 1; i++) d = Math.min(d, segDist(u, v, LOGO_LINE[i], LOGO_LINE[i + 1]));
   if (d <= 0.045) return [255, 255, 255, 255];
-  const t = (u + v) / 2;
-  return [Math.round(0x14 + (0x99 - 0x14) * t), Math.round(0xf1 + (0x45 - 0xf1) * t), Math.round(0x95 + (0xff - 0x95) * t), 255];
+  return [...gradientAt((u + (1 - v)) / 2), 255]; // bottom-left -> top-right
 }
 export function renderIcon(size, ss = 4) {
   const buf = Buffer.alloc(size * size * 4);

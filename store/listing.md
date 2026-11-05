@@ -40,6 +40,7 @@ SolSim is an independent project and is not affiliated with GMGN.
 - Icon: store/icon-128.png
 - Screenshots (1280x800): store/screenshot-1.png, store/screenshot-2.png
 - Small promo tile (440x280): store/promo-small-440x280.png
+- Marquee promo tile (1400x560): store/promo-marquee-1400x560.png
 
 ## Privacy practices
 - **Single purpose:** Simulated (paper) trading of Solana tokens on gmgn.ai using a fake balance, plus creating PnL share images of those simulated trades.

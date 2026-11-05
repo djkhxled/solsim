@@ -2,7 +2,7 @@
 .panel { width: 290px; background: #111418; color: #e8eaed; border: 1px solid #2a2f37; border-radius: 12px;
   font: 13px/1.35 -apple-system, "Segoe UI", system-ui, sans-serif; box-shadow: 0 10px 30px rgba(0,0,0,.5); overflow: hidden; }
 .hdr { display: flex; align-items: center; gap: 8px; padding: 10px 12px; background: #161a20; cursor: grab; user-select: none; }
-.mark { width: 16px; height: 16px; border-radius: 4px; background: linear-gradient(135deg, #14F195, #9945FF); }
+.mark { width: 16px; height: 16px; border-radius: 4px; background: linear-gradient(45deg, #9945FF 8%, #8752F3 30%, #5497D5 50%, #43B4CA 60%, #28E0B9 72%, #19FB9B 97%); }
 .title { font-weight: 700; }
 .bal { margin-left: auto; background: #1f242c; padding: 3px 8px; border-radius: 6px; }
 .body { padding: 10px 12px 12px; position: relative; }

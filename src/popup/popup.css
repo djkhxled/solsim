@@ -1,7 +1,7 @@
 body { width: 380px; margin: 0; background: #111418; color: #e8eaed; font: 13px/1.4 -apple-system, "Segoe UI", system-ui, sans-serif; }
 body.wide { width: auto; max-width: 560px; margin: 24px auto; }
 header { display: flex; align-items: center; gap: 8px; padding: 12px; background: #161a20; }
-.mark { width: 18px; height: 18px; border-radius: 5px; background: linear-gradient(135deg, #14F195, #9945FF); }
+.mark { width: 18px; height: 18px; border-radius: 5px; background: linear-gradient(45deg, #9945FF 8%, #8752F3 30%, #5497D5 50%, #43B4CA 60%, #28E0B9 72%, #19FB9B 97%); }
 .bal { margin-left: auto; background: #1f242c; padding: 3px 8px; border-radius: 6px; }
 nav { display: flex; border-bottom: 1px solid #2a2f37; }
 nav button { flex: 1; background: none; border: 0; color: #9aa0a6; padding: 10px; cursor: pointer; font: inherit; }
