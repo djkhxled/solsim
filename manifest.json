@@ -1,0 +1,19 @@
+{
+  "manifest_version": 3,
+  "name": "SolSim",
+  "version": "0.1.0",
+  "description": "Paper trade Solana memecoins on GMGN and make PnL cards. Never touches your wallet.",
+  "icons": { "16": "assets/icon16.png", "48": "assets/icon48.png", "128": "assets/icon128.png" },
+  "action": { "default_popup": "src/popup/popup.html", "default_icon": { "16": "assets/icon16.png", "48": "assets/icon48.png" } },
+  "background": { "service_worker": "src/background/worker.js", "type": "module" },
+  "permissions": ["storage", "unlimitedStorage"],
+  "host_permissions": ["https://gmgn.ai/*", "https://*.gmgn.ai/*", "https://lite-api.jup.ag/*", "https://api.dexscreener.com/*", "https://api.geckoterminal.com/*"],
+  "content_scripts": [
+    { "matches": ["https://gmgn.ai/*"], "js": ["src/feed/hook.js"], "run_at": "document_start", "world": "MAIN" },
+    { "matches": ["https://gmgn.ai/*"], "js": ["src/panel/content.js"], "run_at": "document_idle" }
+  ],
+  "web_accessible_resources": [{
+    "resources": ["src/panel/*", "src/engine/*", "src/feed/parse.js", "src/feed/priceState.js", "src/shared/*"],
+    "matches": ["https://gmgn.ai/*"]
+  }]
+}

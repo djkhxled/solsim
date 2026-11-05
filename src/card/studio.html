@@ -1,0 +1,22 @@
+<!doctype html>
+<html>
+<head><meta charset="utf-8"><title>SolSim Card Studio</title><link rel="stylesheet" href="studio.css"></head>
+<body>
+  <main>
+    <div class="stage"><canvas id="cv"></canvas><p id="msg" class="muted"></p></div>
+    <aside>
+      <h2>PnL card</h2>
+      <label class="tog"><input type="checkbox" id="neon"> Neon Glow</label>
+      <label class="tog"><input type="checkbox" id="overlay"> Dark Overlay</label>
+      <div class="seg" id="layout"><button data-v="landscape">Landscape</button><button data-v="portrait">Portrait</button></div>
+      <div class="seg" id="currency"><button data-v="USD">USD</button><button data-v="SOL">SOL</button></div>
+      <h3>Background</h3>
+      <div id="bgs" class="bgs"></div>
+      <label class="upload">Upload background<input type="file" id="upload" accept="image/*" hidden></label>
+      <div class="actions"><button id="share">Share to X</button><button id="download">Download</button><button id="copy">Copy</button></div>
+      <p id="status" class="muted"></p>
+    </aside>
+  </main>
+  <script type="module" src="studio.js"></script>
+</body>
+</html>

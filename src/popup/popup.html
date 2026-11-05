@@ -1,0 +1,35 @@
+<!doctype html>
+<html>
+<head><meta charset="utf-8"><title>SolSim</title><link rel="stylesheet" href="popup.css"></head>
+<body>
+  <header><span class="mark"></span><b>SolSim</b><span class="bal"><b id="bal">—</b> SOL</span></header>
+  <nav>
+    <button data-tab="positions" class="on">Positions</button>
+    <button data-tab="history">History</button>
+    <button data-tab="settings">Settings</button>
+  </nav>
+  <section id="positions"></section>
+  <section id="history" hidden></section>
+  <section id="settings" hidden>
+    <form id="sform">
+      <label>Starting balance (SOL, applies on next Reset)<input name="startingBalance" type="number" step="0.1" min="0.1"></label>
+      <label>Platform fee %<input name="platformFeePct" type="number" step="0.1" min="0"></label>
+      <label>Priority fee + tip (SOL)<input name="priorityFeeSol" type="number" step="0.001" min="0"></label>
+      <label>Slippage %<input name="slippagePct" type="number" step="0.1" min="0"></label>
+      <label>Buy presets (SOL, comma separated)<input name="buyPresets"></label>
+      <label>Sell presets (%, comma separated)<input name="sellPresets"></label>
+      <label>Card PnL currency<select name="pnlCurrency"><option>USD</option><option>SOL</option></select></label>
+      <label>Display name on cards<input name="displayName" maxlength="24"></label>
+      <label>Avatar on cards<input id="avatar" type="file" accept="image/*"></label>
+      <img id="avatarPreview" class="avatar" alt="" hidden>
+      <div class="row"><button type="submit">Save</button><span id="saved" class="muted"></span></div>
+    </form>
+    <h3>Reset</h3>
+    <p class="muted">Starts a new run with your starting balance. Old trades move to Past runs.</p>
+    <button id="reset" class="danger">Reset balance</button>
+    <h3>Past runs</h3>
+    <div id="runs"></div>
+  </section>
+  <script type="module" src="popup.js"></script>
+</body>
+</html>
