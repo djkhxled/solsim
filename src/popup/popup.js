@@ -123,6 +123,20 @@ $('#sform').onsubmit = async (e) => {
   setTimeout(() => ($('#saved').textContent = ''), 1500);
 };
 
+$('#debug').onclick = async () => {
+  const o = await chrome.storage.local.get(['ledger', 'settings', 'solUsd']);
+  const l = o.ledger || { trades: [], positions: [] };
+  const info = {
+    version: chrome.runtime.getManifest().version,
+    solUsd: o.solUsd,
+    settings: o.settings && { fee: o.settings.platformFeePct, prio: o.settings.priorityFeeSol, slip: o.settings.slippagePct },
+    trades: l.trades.slice(-15).map((t) => ({ s: t.symbol, side: t.side, ts: t.ts, amt: t.amountSol, tok: t.tokens, usd: t.priceUsd, sol: t.solUsd, mc: t.mcUsd, fill: t.fillPriceSol, imp: t.impactPct, src: t.source })),
+    positions: l.positions.slice(-8).map((p) => ({ s: p.symbol, st: p.status, inv: p.invested, sold: p.sold, tok: p.tokens, sup: p.totalSupply, liq: p.liquidityUsd })),
+  };
+  await navigator.clipboard.writeText(JSON.stringify(info));
+  $('#debugMsg').textContent = 'Copied! Paste it to Claude.';
+};
+
 $('#reset').onclick = async () => {
   if (!confirm('Reset your SolSim balance? Current trades move to Past runs.')) return;
   await send({ cmd: 'reset' });
