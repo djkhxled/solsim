@@ -19,6 +19,12 @@ const LAYOUTS = {
   },
 };
 
+// '#2EE6A6' + 0.6 -> 'rgba(46,230,166,0.6)'
+function withAlpha(hex, a) {
+  const n = parseInt(hex.slice(1), 16);
+  return `rgba(${(n >> 16) & 255},${(n >> 8) & 255},${n & 255},${a})`;
+}
+
 function text(ctx, str, x, y, o) {
   let size = o.size;
   const setFont = () => (ctx.font = `${o.weight || 400} ${size}px ${FONT}`);
@@ -29,9 +35,8 @@ function text(ctx, str, x, y, o) {
   ctx.fillStyle = o.color || '#fff';
   if (o.glow) {
     ctx.save();
-    ctx.shadowColor = o.glow;
-    ctx.shadowBlur = 40; ctx.fillText(str, x, y);
-    ctx.shadowBlur = 16; ctx.fillText(str, x, y);
+    ctx.shadowColor = withAlpha(o.glow, 0.7); // one soft glow pass
+    ctx.shadowBlur = 30; ctx.fillText(str, x, y);
     ctx.restore();
   }
   ctx.fillText(str, x, y);
@@ -67,7 +72,7 @@ function drawChart(ctx, model, box, neon) {
   if (!g) return;
   ctx.save();
   ctx.lineJoin = 'round'; ctx.lineCap = 'round'; ctx.strokeStyle = '#fff'; ctx.lineWidth = 4;
-  if (neon) { ctx.shadowColor = 'rgba(255,255,255,0.9)'; ctx.shadowBlur = 18; }
+  if (neon) { ctx.shadowColor = 'rgba(255,255,255,0.55)'; ctx.shadowBlur = 10; }
   ctx.beginPath();
   g.path.forEach(([x, y], i) => (i ? ctx.lineTo(x, y) : ctx.moveTo(x, y)));
   ctx.stroke();
@@ -76,7 +81,7 @@ function drawChart(ctx, model, box, neon) {
     const c = m.side === 'B' ? GREEN : RED;
     ctx.save();
     ctx.beginPath(); ctx.arc(m.x, m.y, 16, 0, Math.PI * 2); ctx.fillStyle = c;
-    if (neon) { ctx.shadowColor = c; ctx.shadowBlur = 20; }
+    if (neon) { ctx.shadowColor = withAlpha(c, 0.6); ctx.shadowBlur = 12; }
     ctx.fill();
     ctx.restore();
     ctx.font = `800 18px ${FONT}`; ctx.fillStyle = '#0b0f14'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';

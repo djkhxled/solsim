@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "SolSim",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "Paper trade Solana memecoins on GMGN and make PnL cards. Never touches your wallet.",
   "icons": { "16": "assets/icon16.png", "48": "assets/icon48.png", "128": "assets/icon128.png" },
   "action": { "default_popup": "src/popup/popup.html", "default_icon": { "16": "assets/icon16.png", "48": "assets/icon48.png" } },
